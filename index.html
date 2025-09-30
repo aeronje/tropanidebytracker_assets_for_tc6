@@ -1,0 +1,94 @@
+<form id="tropanidebytrackerForm"> <!--Mula lines 1 to 21 ay purely HTML lahat yan para ma-define ang labels-->
+  <label>First name:</label>
+  <input type="text" name="firstName" required><br>
+
+  <label>Surname:</label>
+  <input type="text" name="lastName" required><br>
+
+  <label>Company name:</label>
+  <input type="text" name="contractorCompany" required><br>
+
+  <label>City of residence:</label>
+  <input type="text" name="cityofResidence" required><br>
+
+  <label>Contact number:</label>
+  <input type="text" name="contactNumber" required><br>
+
+  <label>Jowa name (optional | kung may jowa lang talaga):</label>
+  <input type="text" name="jowaName"><br>
+
+  <button type="submit">SUBMIT</button>
+</form>
+
+<!-- Lugar para ipakita ang tracking ID -->
+<div id="trackingInfo" style="margin-top:20px; display:none;">
+  <p>✅ Submission received. Your tracking ID is:</p>
+  <code id="trackingId"></code>
+</div>
+
+<!-- Lugar para mag-check ng status -->
+<div id="statusChecker" style="margin-top:20px; display:none;">
+  <h3>Check Status</h3>
+  <button id="checkStatusBtn">Check Status</button>
+  <p id="statusResult"></p>
+</div>
+
+<script>
+document.getElementById('tropanidebytrackerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  // Lahat ng ni-declared na labels sa taas ay may katumbas na variables, paki-suri ang mga sumusunod:
+  const form = e.target;
+  const formData = {
+    firstName: form.firstName.value,
+    lastName: form.lastName.value,
+    contractorCompany: form.contractorCompany.value,
+    cityofResidence: form.cityofResidence.value,
+    contactNumber: form.contactNumber.value,
+    jowaName: form.jowaName.value || null
+  };
+  // Lahat ng inserted data sa mga variables na nabanggit sa taas ay isasalpak natin bilang POST method kaya kailangan ng nakabukod na submit.js
+  try {
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+
+    const data = await res.json();
+    console.log("Server response:", data);
+
+    if (data.trackingId) {
+      document.getElementById('trackingInfo').style.display = "block";
+      document.getElementById('trackingId').innerText = data.trackingId;
+      document.getElementById('statusChecker').style.display = "block";
+      window._trackingId = data.trackingId; // store para sa status check
+    }
+
+    alert(data.message || "Naipasok naman ng maayos bhe.");
+  } catch (err) {
+    console.error("Submission error:", err);
+    alert("May parang mali bhe pero di ako sure.");
+  }
+});
+
+// Status check button
+document.getElementById('checkStatusBtn').addEventListener('click', async () => {
+  if (!window._trackingId) return alert("Wala kang tracking ID bhe.");
+
+  try {
+    const res = await fetch(`/api/status?trackingId=${window._trackingId}`);
+    const data = await res.json();
+
+    if (data.confirmationId) {
+      document.getElementById('statusResult').innerText =
+        "🎉 Confirmed! Your Confirmation ID is: " + data.confirmationId;
+    } else {
+      document.getElementById('statusResult').innerText = "⏳ Pending pa bhe, balik ka later.";
+    }
+  } catch (err) {
+    console.error("Status check error:", err);
+    document.getElementById('statusResult').innerText = "Error while checking bhe.";
+  }
+});
+</script>
