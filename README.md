@@ -9,7 +9,7 @@ aeronje/
     ├── package.json     # on-premise tunneled via NGROK
     └── [README.md](https://github.com/aeronje/tropanidebytracker/blob/main/README.md)
 ```
-#Tech content
+# Tech content
 You may watch [TC6](https://web.facebook.com/share/v/1F4CDaVxnk/) for more context. ```The video is in Filipino language```
 
 
